@@ -1,6 +1,9 @@
 import numpy as np
 import math
+import bs4 as bs
+import requests
 import yfinance as yf
+import pandas as pd
 import datetime
 
 def MovingAverage(df, window):
@@ -53,11 +56,12 @@ def backtest(ticker, startdate, enddate, capital, interval = "60m"):
                 if MA_200[i] >= MA_50[i]:
 
                     #determine shares to sell (sell all)
-                    shares_sell = portfolio[ticker]  
-                    log[date] = 'Sold for ' + str(prices[i])
+                    if len(portfolio) > 0:
+                        shares_sell = portfolio[ticker]  
+                        log[date] = 'Sold for ' + str(prices[i])
 
-                    #update balance
-                    balance = balance + (shares_sell * prices[i])
+                        #update balance
+                        balance = balance + (shares_sell * prices[i])
 
 
     net_assets = (portfolio[ticker] * prices[-1]) + balance #most recent value of stocks and cash together
@@ -81,19 +85,44 @@ def hold(ticker, startdate, enddate, capital, interval = "60m"):
     balance = balance + (max_shares * prices[-1])
 
     cumreturns =  ((balance -  capital) / capital) * 100
+    print(cumreturns)
 
     return cumreturns
-    
+
+def get_smp500_tickers():
+
+    resp = requests.get('http://en.wikipedia.org/wiki/List_of_S%26P_500_companies')
+    soup = bs.BeautifulSoup(resp.text, 'lxml')
+    table = soup.find('table', {'class': 'wikitable sortable'})
+    tickers = []
+    for row in table.findAll('tr')[1:]:
+        ticker = row.findAll('td')[0].text
+        tickers.append(ticker)
+
+    tickers = [s.replace('\n', '') for s in tickers]
+
+    return tickers
+
 
 if __name__ == '__main__':
+
+    tickers = get_smp500_tickers()
 
     start_time = datetime.datetime(2020, 9, 2)
     end_time = datetime.datetime.now().date().isoformat()
 
-    returns, portfolio, log = backtest('AAPL',start_time,end_time, 1000, "1h")
-    holding_returns= hold('AAPL',start_time,end_time, 1000, "1h")
+    results = pd.DataFrame(columns = ['Stock', 'Holding Returns', 'Golden Cross Returns'])
 
-    print(returns)
-    print(holding_returns)
-    print(portfolio)
-    print(log)
+    for ticker in tickers:
+
+        try:
+            returns, portfolio, log = backtest(ticker,start_time,end_time, 1000, "1h")
+            holding_returns = hold(ticker,start_time,end_time, 1000, "1h")
+
+            results = results.append({'Stock' : ticker, 'Holding Returns' : holding_returns, 'Golden Cross Returns' : returns}, ignore_index = True)
+
+        except:
+            pass
+
+
+    results = results.to_csv('res.csv')
