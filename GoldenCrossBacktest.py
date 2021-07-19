@@ -70,12 +70,12 @@ def backtest_with_stop_loss(ticker, startdate, enddate, capital, interval = "60m
 
                         current_price = prices[i]
                         stop_loss = list(stops.items())[-1][1]
-                        
+
                         if current_price < stop_loss:
 
                             shares_sell = portfolio[ticker]  
                             log[date] = 'Sold for ' + str(prices[i]) + 'due to stop criteria being met'
-                            log[date] = 'sell'
+                            prevOrder = 'sell'
 
                             #update balance
                             balance = balance + (shares_sell * prices[i])
@@ -105,12 +105,13 @@ def backtest_with_stop_loss(ticker, startdate, enddate, capital, interval = "60m
 
                         #determine shares to sell (sell all)
                         if len(portfolio) > 0:
-                            shares_sell = portfolio[ticker]  
-                            log[date] = 'Sold for ' + str(prices[i])
-                            prevOrder = 'sell'
+                            if prevOrder == 'buy':
+                                shares_sell = portfolio[ticker]  
+                                log[date] = 'Sold for ' + str(prices[i])
+                                prevOrder = 'sell'
 
-                            #update balance
-                            balance = balance + (shares_sell * prices[i])
+                                #update balance
+                                balance = balance + (shares_sell * prices[i])
 
 
     net_assets = (portfolio[ticker] * prices[-1]) + balance #most recent value of stocks and cash together
