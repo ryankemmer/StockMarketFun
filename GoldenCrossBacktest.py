@@ -113,7 +113,7 @@ def backtest_with_stop_loss(ticker, startdate, enddate, capital, interval = "60m
                                 #update balance
                                 balance = balance + (shares_sell * prices[i])
 
-
+    #TODO: Fix bug here
     net_assets = (portfolio[ticker] * prices[-1]) + balance #most recent value of stocks and cash together
     cumreturns =  ((net_assets -  capital) / capital) * 100
 
@@ -168,7 +168,7 @@ def backtest(ticker, startdate, enddate, capital, interval = "60m"):
                         #update balance
                         balance = balance + (shares_sell * prices[i])
 
-
+    #TODO: Fix bug here
     net_assets = (portfolio[ticker] * prices[-1]) + balance #most recent value of stocks and cash together
     cumreturns =  ((net_assets -  capital) / capital) * 100
 
