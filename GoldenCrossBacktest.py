@@ -79,6 +79,7 @@ def backtest_with_stop_loss(ticker, startdate, enddate, capital, interval = "60m
 
                             #update balance
                             balance = balance + (shares_sell * prices[i])
+                            portfolio[ticker]=0
 
                 #if previously the 200 day moving average is greater than the 50 day
                 if MA_200[i - 1] > MA_50[i - 1]:
@@ -88,7 +89,10 @@ def backtest_with_stop_loss(ticker, startdate, enddate, capital, interval = "60m
                         
                         #calculate max shares availible
                         max_shares = math.floor(balance / prices[i])
-                        stop_loss = prices[i] - (prices[i] * volatilities[i])
+                        
+                        #stop_loss = prices[i] - (prices[i] * volatilities[i])
+
+                        stop_loss = prices[i]
 
                         portfolio[ticker] = max_shares
                         stops[ticker] = stop_loss
@@ -112,9 +116,12 @@ def backtest_with_stop_loss(ticker, startdate, enddate, capital, interval = "60m
 
                                 #update balance
                                 balance = balance + (shares_sell * prices[i])
+                                portfolio[ticker]=0
 
-    #TODO: Fix bug here
+
     net_assets = (portfolio[ticker] * prices[-1]) + balance #most recent value of stocks and cash together
+    print(net_assets)
+    print(capital)
     cumreturns =  ((net_assets -  capital) / capital) * 100
 
     return cumreturns, portfolio, log
@@ -167,8 +174,9 @@ def backtest(ticker, startdate, enddate, capital, interval = "60m"):
 
                         #update balance
                         balance = balance + (shares_sell * prices[i])
+                        portfolio[ticker]=0
 
-    #TODO: Fix bug here
+
     net_assets = (portfolio[ticker] * prices[-1]) + balance #most recent value of stocks and cash together
     cumreturns =  ((net_assets -  capital) / capital) * 100
 
@@ -207,7 +215,6 @@ def get_smp500_tickers():
     tickers = [s.replace('\n', '') for s in tickers]
 
     return tickers
-
 if __name__ == '__main__':
 
     tickers = get_smp500_tickers()
